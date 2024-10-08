@@ -1,7 +1,7 @@
 import servicesJSON from '../assets/services.json'
 
 import { render, html } from 'uhtml'
-const icons = import.meta.globEager('../assets/icons/*.svg')
+const icons = import.meta.glob('../assets/icons/*.svg', {eager: true})
 
 export { register }
 
@@ -34,6 +34,8 @@ async function register ({ registerHook, peertubeHelpers }) {
     })
   }
 
+  console.log("Pre-load icons")
+
   let observer
   registerHook({
     target: 'action:router.navigation-end',
@@ -45,7 +47,6 @@ async function register ({ registerHook, peertubeHelpers }) {
       if (/^\/(videos\/watch|w)\/.+/.test(path)) {
         observer = addModalOpenObserver(node => {
           onModalOpen(node, node.querySelector('.video'))
-
           if (/^\/(videos\/watch\/playlist|w\/p)\/.+/.test(path)) {
             onModalOpen(node, node.querySelector('.playlist'))
           }
@@ -154,8 +155,7 @@ async function buildModal ({ title, icon, link }) {
 
 async function displayButtons (tabContent) {
   // Get input link element
-  const inputLinkElement = tabContent.querySelector('my-input-toggle-hidden input, my-input-readonly-copy input') // my-input-readonly-copy is for backward compatibility
-
+  const inputLinkElement = tabContent.querySelector('input')
   // Source title to share
   let sourceTitle
   try {
@@ -201,7 +201,6 @@ function onModalOpen (node, container) {
   // avoid weird effect of DOM inserting on first modal show
   node.style.opacity = 0
   setTimeout(() => { node.style.opacity = 1 }, 50)
-
   if (container) {
     const tab = container.querySelector('.nav-tabs').firstChild // first tab
     addTabSelectObserver(tab, onTabSelect)
@@ -215,17 +214,19 @@ function onTabSelect (node) {
 
 function addModalOpenObserver (callback) {
   const observer = new MutationObserver(mutations => {
-    for (const { addedNodes } of mutations) {
-      addedNodes.forEach(node => {
-        if (node.localName === 'ngb-modal-window') {
-          callback(node)
+    for (const mutation of mutations) {
+        if (mutation.type === "attributes") {
+          if (mutation.target.className === "d-block modal show") {
+              callback(mutation.target)
+          }
         }
-      })
     }
   })
 
   observer.observe(document.body, {
-    childList: true
+    attributes: true,
+    attributeFilter: ["class"],
+    subtree: true
   })
 
   return observer

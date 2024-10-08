@@ -51,5 +51,17 @@
   {
     "label": "MeWe",
     "sharerLink": "https://mewe.com/share?link=%link"
+  }, 
+  {
+    "label": "Telegram",
+    "sharerLink": "https://t.me/share/url?url=%link&text=%body"
+  },
+  {
+    "label": "WhatsApp",
+    "sharerLink": "https://api.whatsapp.com/send/?text=%link&type=custom_url&app_absent=0"
+  },
+  {
+    "label": "Instagram",
+    "sharerLink": "https://www.instagram.com/sharer.php?u=%link"
   }
 ]
